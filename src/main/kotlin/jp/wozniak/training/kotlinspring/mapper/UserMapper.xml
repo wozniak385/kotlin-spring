@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.wozniak.training.kotlinspring.mapper.UserMapper">
+
+    <resultMap id="User" type="jp.wozniak.training.kotlinspring.domain.User">
+        <id property="userId" column="USER_ID"/>
+        <result property="email" column="EMAIL"/>
+        <result property="password" column="PASSWORD"/>
+        <result property="firstName" column="FIRST_NAME"/>
+        <result property="lastName" column="LAST_NAME"/>
+        <result property="administratorFlag" column="ADMINISTRATOR_FLAG"/>
+        <result property="status" column="STATUS"/>
+        <result property="expiredAt" column="EXPIRED_AT"/>
+        <result property="updateUserId" column="UPDATE_USER_ID"/>
+        <result property="updatedAt" column="UPDATED_AT"/>
+        <result property="lockVersion" column="LOCK_VERSION"/>
+        <result property="deleteFlag" column="DELETE_FLAG"/>
+    </resultMap>
+
+    <select id="select" resultMap="User" parameterType="Long">
+        SELECT
+            id, email, first_name, last_name,
+            admin_flag, state,
+            updated_user, updated_at, lock_version
+        FROM users
+        WHERE id = #{userid}
+    </select>
+
+    <insert
+        id="insert" useGeneratedKeys="true" keyProperty="id"
+        parameterType="jp.wozniak.training.kotlinspring.domain.NewUser"
+    >
+        INSERT INTO users(email,password,expires_at,first_name,last_name,admin_flag)
+        VALUES(#{email},#{hashedPassword},#{expiresAt},#{firstName},#{lastName},#{adminFlag})
+    </insert>
+
+
+    <!-- sysdateをbindする共通Util -->
+<!--    <sql id="timestampVariable">-->
+<!--        <bind name="sysdate" value="@java.time.LocalDateTime@now()" />-->
+<!--    </sql>-->
+</mapper>
+
