@@ -21,7 +21,7 @@ class HelloController (
 
     @RequestMapping("/")
     fun index() : String{
-        return "Hello Spring Boot";
+        return "Hello Spring Boot"
     }
 
 

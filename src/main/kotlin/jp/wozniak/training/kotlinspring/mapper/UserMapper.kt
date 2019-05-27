@@ -8,5 +8,5 @@ import org.apache.ibatis.annotations.Param
 @Mapper
 interface UserMapper{
     fun insert(newUser: NewUser): Int
-    fun select(id: Long): User
+    fun select(id: Long): List<User>
 }
