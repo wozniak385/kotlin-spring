@@ -19,6 +19,14 @@
         <result property="deleteFlag" column="DELETE_FLAG"/>
     </resultMap>
 
+    <select id="findAll" resultMap="User">
+        SELECT
+            id, email, first_name, last_name,
+            admin_flag, state,
+            updated_user, updated_at, lock_version
+        FROM users
+    </select>
+
     <select id="get" resultMap="User" parameterType="Long">
         SELECT
             id, email, first_name, last_name,
@@ -28,13 +36,34 @@
         WHERE id = #{userid}
     </select>
 
-    <insert
-        id="add" useGeneratedKeys="true" keyProperty="id"
-        parameterType="jp.wozniak.training.kotlinspring.domain.NewUser"
-    >
-        INSERT INTO users(email,password,expires_at,first_name,last_name,admin_flag)
-        VALUES(#{email},#{hashedPassword},#{expiresAt},#{firstName},#{lastName},#{adminFlag})
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users(
+            email,password,expires_at,first_name,last_name,admin_flag
+        )VALUES(
+            #{email},#{hashedPassword},#{expiresAt},#{firstName},#{lastName},#{adminFlag}
+        )
     </insert>
+
+    <update id="put">
+        UPDATE users
+        SET
+            email = #{email},
+            password = #{hashedPassword},
+            first_name = #{firstName},
+            last_name = #{lastName},
+            admin_flag = #{adminFlag},
+            state = #{state},
+            updated_at = #{updatedAt},
+            lock_version = #{lockVersion}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE users
+        SET
+            deleted_at = NOW()
+        WHERE id = #{id}
+    </update>
 
 
     <!-- sysdateをbindする共通Util -->

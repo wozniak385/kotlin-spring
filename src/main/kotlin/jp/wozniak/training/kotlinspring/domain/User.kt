@@ -11,7 +11,7 @@ enum class UserState{
 }
 
 class User {
-    val id: Long = -1
+    var id: Long = -1
     var email: String = ""
     var hashedPassword: String = ""
     var expiresAt: LocalDateTime= LocalDateTime.now()

@@ -3,6 +3,8 @@ package jp.wozniak.training.kotlinspring.controller
 import jp.wozniak.training.kotlinspring.domain.User
 import jp.wozniak.training.kotlinspring.repository.UserRepository
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/users")
@@ -14,9 +16,9 @@ class UserController(
 //    private val authenticationConfigurationProperties: AuthenticationConfigurationProperties
 ) {
 
-    @GetMapping("/list")
-    fun list(): String {
-        return "user/list"
+    @GetMapping("/")
+    fun list(): List<User> {
+        return this.userRepository.findAll()
     }
 
     @GetMapping("/{id}")
@@ -25,25 +27,20 @@ class UserController(
     }
 
     @PostMapping("/")
-    fun add() {
-        val newUser: User = User()
-        newUser.email = "hoge@mail.com"
-        newUser.hashedPassword = "qwertyuiop"
-        newUser.firstName =  "Taro"
-        newUser.lastName = "Yamada"
-        this.userRepository.add(newUser)
+    fun add(@RequestBody user: User) {
+        this.userRepository.add(user)
     }
 
-//    @PostMapping(path = ["/edit"])
-//    fun edit(): String {
-//        return "redirect:/user/list"
-//    }
-//
-//    @GetMapping(path = ["/delete"])
-//    fun delete(): String {
-//        return "redirect:/user/list"
-//    }
-//
+    @PutMapping("/")
+    fun put(@RequestBody user: User) {
+        this.userRepository.put(user)
+    }
+
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable id: Long) {
+        this.userRepository.delete(id)
+    }
+
 //    @GetMapping(path = ["/init"])
 //    fun initPassword(): String {
 //        return "redirect:/user/list"

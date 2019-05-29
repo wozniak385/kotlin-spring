@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository
 @Repository
 class UserRepository(val userMapper : UserMapper){
 
+    fun findAll() :List<User> {
+        return this.userMapper.findAll()
+    }
+
     fun get(id: Long) :User {
         return this.userMapper.get(id)
     }
@@ -19,5 +23,14 @@ class UserRepository(val userMapper : UserMapper){
     fun add(newUser: User)  {
          this.userMapper.add(newUser)
     }
+
+    fun put(user: User)  {
+        this.userMapper.put(user)
+    }
+
+    fun delete(id: Long) {
+        return this.userMapper.delete(id)
+    }
+
 
 }
