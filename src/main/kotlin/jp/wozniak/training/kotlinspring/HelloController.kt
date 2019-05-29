@@ -26,16 +26,13 @@ class HelloController (
 
 
     @RequestMapping(path=["/add"], produces=["application/json"])
-    fun add() : Int {
-        val now = LocalDateTime.now()
-        val newUser: NewUser = NewUser(
-            "hoge@mail.com",
-            "qwertyuiop",
-            now, "Taro","Yamada",
-            false
-        )
-        val result = this.userMapper.insert(newUser)
-        return result
+    fun add() {
+        val newUser: User = User()
+        newUser.email = "hoge@mail.com"
+        newUser.hashedPassword = "qwertyuiop"
+        newUser.firstName =  "Taro"
+        newUser.lastName = "Yamada"
+        this.userMapper.insert(newUser)
     }
 
     @RequestMapping(path=["/get/{id}"], produces=["application/json"])
