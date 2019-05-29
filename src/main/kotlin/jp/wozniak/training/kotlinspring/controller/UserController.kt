@@ -1,28 +1,37 @@
 package jp.wozniak.training.kotlinspring.controller
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import jp.wozniak.training.kotlinspring.domain.User
+import jp.wozniak.training.kotlinspring.repository.UserRepository
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/users")
 class UserController(
-//    private val userDao: UserDao,
+    private val userRepository: UserRepository
 //    private val passwordEncoder: PasswordEncoder,
 //    private val randomStringGenerator: RandomStringGenerator,
 //    private val messageSource: MessageSourceHelper,
 //    private val authenticationConfigurationProperties: AuthenticationConfigurationProperties
 ) {
 
-    @GetMapping(path = ["/list"])
+    @GetMapping("/list")
     fun list(): String {
         return "user/list"
     }
 
-    @PostMapping(path = ["/add"])
-    fun add(): String {
-        return "redirect:/user/list"
+    @GetMapping("/{id}")
+    fun get(@PathVariable id: Long) : User {
+        return this.userRepository.get(id)
+    }
+
+    @PostMapping("/")
+    fun add() {
+        val newUser: User = User()
+        newUser.email = "hoge@mail.com"
+        newUser.hashedPassword = "qwertyuiop"
+        newUser.firstName =  "Taro"
+        newUser.lastName = "Yamada"
+        this.userRepository.add(newUser)
     }
 
 //    @PostMapping(path = ["/edit"])

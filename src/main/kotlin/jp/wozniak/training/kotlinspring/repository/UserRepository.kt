@@ -10,13 +10,14 @@ import org.springframework.stereotype.Repository
 
 
 @Repository
-class UserRepository(val userMapper : UserMapper, val sqlSessionTemplate: SqlSessionTemplate){
-
-    fun add(newUser: User)  {
-         this.userMapper.insert(newUser)
-    }
+class UserRepository(val userMapper : UserMapper){
 
     fun get(id: Long) :User {
-        return this.sqlSessionTemplate.getMapper(UserMapper::class.java).select(id)
+        return this.userMapper.get(id)
     }
+
+    fun add(newUser: User)  {
+         this.userMapper.add(newUser)
+    }
+
 }
