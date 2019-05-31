@@ -33,7 +33,7 @@
         WHERE id = #{userid}
     </select>
 
-    <insert id="post" useGeneratedKeys="true" keyProperty="id">
+    <insert id="post" useGeneratedKeys="true" keyProperty="generatedId">
         INSERT INTO users(
             email,password,expires_at,first_name,last_name,admin_flag
         )VALUES(

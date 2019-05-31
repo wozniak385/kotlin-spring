@@ -22,6 +22,17 @@ class User {
     var lockVersion: Long = 0
 }
 
+class NewUser (
+    val email: String,
+    val hashedPassword: String,
+    val expiresAt: LocalDateTime,
+    val firstName: String,
+    val lastName: String,
+    val adminFlag: Boolean
+){
+    var generatedId: Long? = null
+}
+
 class PatchUser {
     var id: Long = -1
     var email: String? = null

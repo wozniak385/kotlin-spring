@@ -1,5 +1,6 @@
 package jp.wozniak.training.kotlinspring.controller
 
+import jp.wozniak.training.kotlinspring.domain.NewUser
 import jp.wozniak.training.kotlinspring.domain.PatchUser
 import jp.wozniak.training.kotlinspring.domain.User
 import jp.wozniak.training.kotlinspring.service.UserService
@@ -26,8 +27,9 @@ class UserController(
     }
 
     @PostMapping("/")
-    fun post(@RequestBody user: User) {
+    fun post(@RequestBody user: NewUser) : NewUser {
         this.userService.post(user)
+        return user
     }
 
     @PatchMapping("/")

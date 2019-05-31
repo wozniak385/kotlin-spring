@@ -1,5 +1,6 @@
 package jp.wozniak.training.kotlinspring.repository
 
+import jp.wozniak.training.kotlinspring.domain.NewUser
 import jp.wozniak.training.kotlinspring.domain.PatchUser
 import jp.wozniak.training.kotlinspring.domain.User
 import jp.wozniak.training.kotlinspring.mapper.UserMapper
@@ -20,7 +21,7 @@ class UserRepository(val userMapper : UserMapper){
         //エルビス演算子しゅげえええええ
     }
 
-    fun post(user: User)  {
+    fun post(user: NewUser)  {
          this.userMapper.post(user)
     }
 
