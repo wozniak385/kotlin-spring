@@ -2,7 +2,6 @@ package jp.wozniak.training.kotlinspring
 
 import java.time.LocalDateTime
 
-import jp.wozniak.training.kotlinspring.domain.NewUser
 import jp.wozniak.training.kotlinspring.domain.User
 import jp.wozniak.training.kotlinspring.mapper.UserMapper
 import jp.wozniak.training.kotlinspring.repository.UserRepository
