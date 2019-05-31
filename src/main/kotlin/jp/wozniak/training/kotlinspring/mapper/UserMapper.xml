@@ -5,25 +5,23 @@
 <mapper namespace="jp.wozniak.training.kotlinspring.mapper.UserMapper">
 
     <resultMap id="User" type="jp.wozniak.training.kotlinspring.domain.User">
-        <id property="userId" column="USER_ID"/>
-        <result property="email" column="EMAIL"/>
-        <result property="password" column="PASSWORD"/>
-        <result property="firstName" column="FIRST_NAME"/>
-        <result property="lastName" column="LAST_NAME"/>
-        <result property="administratorFlag" column="ADMINISTRATOR_FLAG"/>
-        <result property="status" column="STATUS"/>
-        <result property="expiredAt" column="EXPIRED_AT"/>
-        <result property="updateUserId" column="UPDATE_USER_ID"/>
-        <result property="updatedAt" column="UPDATED_AT"/>
-        <result property="lockVersion" column="LOCK_VERSION"/>
-        <result property="deleteFlag" column="DELETE_FLAG"/>
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="hashedPassword" column="password"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="firstName" column="first_name"/>
+        <result property="lastName" column="last_name"/>
+        <result property="adminFlag" column="admin_flag"/>
+        <result property="status" column="status"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="lockVersion" column="lock_version"/>
     </resultMap>
 
     <select id="findAll" resultMap="User">
         SELECT
             id, email, first_name, last_name,
             admin_flag, state,
-            updated_user, updated_at, lock_version
+            updated_at, lock_version
         FROM users
     </select>
 
@@ -31,7 +29,7 @@
         SELECT
             id, email, first_name, last_name,
             admin_flag, state,
-            updated_user, updated_at, lock_version
+            updated_at, lock_version
         FROM users
         WHERE id = #{userid}
     </select>
@@ -44,17 +42,29 @@
         )
     </insert>
 
-    <update id="put">
+    <update id="patch">
         UPDATE users
-        SET
-            email = #{email},
-            password = #{hashedPassword},
-            first_name = #{firstName},
-            last_name = #{lastName},
-            admin_flag = #{adminFlag},
-            state = #{state},
-            updated_at = #{updatedAt},
+        <set>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="hashedPassword != null">
+                password = #{hashedPassword},
+            </if>
+            <if test="firstName != null">
+                first_name = #{firstName},
+            </if>
+            <if test="lastName != null">
+                last_name = #{lastName},
+            </if>
+            <if test="adminFlag != null">
+                admin_flag = #{adminFlag},
+            </if>
+            <if test="state != null">
+                state = #{state},
+            </if>
             lock_version = #{lockVersion}
+        </set>
         WHERE id = #{id}
     </update>
 
