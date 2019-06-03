@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper
 interface UserMapper{
     fun findAll(): List<User>
     fun get(id: Long): User?
-    fun post(user: NewUser)
-    fun patch(user: PatchUser)
-    fun delete(id: Long)
+    fun post(user: NewUser): Boolean
+    fun patch(user: PatchUser): Boolean
+    fun delete(id: Long): Boolean
 }

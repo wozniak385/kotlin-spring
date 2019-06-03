@@ -11,38 +11,35 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 class UserRepository(val userMapper : UserMapper){
 
-    fun findAll() :List<User> {
+    fun findAll() : List<User> {
         return this.userMapper.findAll()
     }
 
-    fun get(id: Long) :User {
+    fun get(id: Long) : User {
         val user = this.userMapper.get(id)
-        return user ?: throw ResourceNotFoundException("no such a user.")
+        return user ?: throw ResourceNotFoundException("No such a user.")
         //エルビス演算子しゅげえええええ
     }
 
-    fun post(user: NewUser)  {
+    fun post(user: NewUser) {
          this.userMapper.post(user)
     }
 
-    fun patch(user: PatchUser)  {
+    fun patch(user: PatchUser) {
         val trying = user.lockVersion
         val actual = this.get(user.id).lockVersion
         if(trying < actual){
-            throw UpdatingCollidedException("updating attempt is collided.")
+            throw UpdatingCollidedException("Updating attempt is collided.")
         }
         user.lockVersion++
         this.userMapper.patch(user)
     }
 
     fun delete(id: Long) {
-        val user = this.get(id)
-        /* TODO
-            本当はこんなことしなくていい気がする。
-            DELETE文の結果をintで受け取ったら
-            成功か失敗か判定できるのでは。
-         */
-        return this.userMapper.delete(id)
+        val isChangeOccured = this.userMapper.delete(id)
+        if(!isChangeOccured){
+            throw ResourceNotFoundException("No such a user.")
+        }
     }
 
 }

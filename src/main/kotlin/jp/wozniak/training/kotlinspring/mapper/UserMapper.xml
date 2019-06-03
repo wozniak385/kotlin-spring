@@ -7,12 +7,12 @@
     <resultMap id="User" type="jp.wozniak.training.kotlinspring.domain.User">
         <id property="id" column="id"/>
         <result property="email" column="email"/>
-        <result property="hashedPassword" column="password"/>
+<!--        <result property="hashedPassword" column="password"/>-->
         <result property="expiresAt" column="expires_at"/>
         <result property="firstName" column="first_name"/>
         <result property="lastName" column="last_name"/>
         <result property="adminFlag" column="admin_flag"/>
-        <result property="status" column="status"/>
+        <result property="state" column="state"/>
         <result property="lockVersion" column="lock_version"/>
     </resultMap>
 
@@ -22,6 +22,7 @@
             admin_flag, state,
             updated_at, lock_version
         FROM users
+        WHERE deleted_at IS NULL
     </select>
 
     <select id="get" resultMap="User" parameterType="Long">
@@ -31,6 +32,7 @@
             updated_at, lock_version
         FROM users
         WHERE id = #{userid}
+          AND deleted_at IS NULL
     </select>
 
     <insert id="post" useGeneratedKeys="true" keyProperty="generatedId">
