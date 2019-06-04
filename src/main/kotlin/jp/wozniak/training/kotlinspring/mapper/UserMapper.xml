@@ -67,6 +67,7 @@
             lock_version = #{lockVersion}
         </set>
         WHERE id = #{id}
+          AND deleted_at IS NULL
     </update>
 
     <update id="delete">
@@ -74,6 +75,7 @@
         SET
             deleted_at = NOW()
         WHERE id = #{id}
+          AND deleted_at IS NULL
     </update>
 
 
