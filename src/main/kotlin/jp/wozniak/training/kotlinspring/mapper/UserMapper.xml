@@ -31,7 +31,7 @@
             admin_flag, state,
             updated_at, lock_version
         FROM users
-        WHERE id = #{userid}
+        WHERE id = #{id}
           AND deleted_at IS NULL
     </select>
 

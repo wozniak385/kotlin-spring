@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.wozniak.training.kotlinspring.mapper.ChannelMapper">
+
+    <resultMap id="Channel" type="jp.wozniak.training.kotlinspring.domain.Channel">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="overview" column="overview"/>
+        <result property="lockVersion" column="lock_version"/>
+        <association property="user" column="user" select="getUser" javaType="jp.wozniak.training.kotlinspring.domain.User"/>
+    </resultMap>
+
+    <select id="getUser" resultType="jp.wozniak.training.kotlinspring.domain.User">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="Channel">
+        SELECT
+            id, title, overview, user,
+            updated_at, lock_version
+        FROM channels
+        WHERE deleted_at IS NULL
+    </select>
+
+    <select id="findByUser" resultMap="Channel">
+        SELECT
+            id, title, overview, user,
+            updated_at, lock_version
+        FROM channels
+        WHERE user = #{userId}
+          AND deleted_at IS NULL
+    </select>
+
+    <select id="get" resultMap="Channel" parameterType="Long">
+        SELECT
+            id, title, overview, user,
+            updated_at, lock_version
+        FROM channels
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </select>
+
+    <insert id="post" useGeneratedKeys="true" keyProperty="generatedId">
+        INSERT INTO channels(
+            title,overview,user
+        )VALUES(
+            #{title},#{overview},#{loginUser.id}
+        )
+    </insert>
+
+    <update id="patch">
+        UPDATE channels
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="overview != null">
+                overview = #{overview},
+            </if>
+            lock_version = #{lockVersion} <!-- TODO: increment in SQL? -->
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE channels
+        SET deleted_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByUser">
+        UPDATE channels
+        SET deleted_at = NOW()
+        WHERE user = #{userId}
+    </update>
+
+    <!-- sysdateをbindする共通Util -->
+<!--    <sql id="timestampVariable">-->
+<!--        <bind name="sysdate" value="@java.time.LocalDateTime@now()" />-->
+<!--    </sql>-->
+</mapper>
+
