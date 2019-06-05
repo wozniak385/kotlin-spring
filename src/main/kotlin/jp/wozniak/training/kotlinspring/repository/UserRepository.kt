@@ -21,6 +21,10 @@ class UserRepository(val userMapper : UserMapper){
         //エルビス演算子しゅげえええええ
     }
 
+    fun getByEmail(email: String): User {
+        return this.userMapper.getByEmail(email)
+    }
+
     fun post(user: NewUser) {
          this.userMapper.post(user)
     }

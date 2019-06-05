@@ -7,7 +7,7 @@
     <resultMap id="User" type="jp.wozniak.training.kotlinspring.domain.User">
         <id property="id" column="id"/>
         <result property="email" column="email"/>
-<!--        <result property="hashedPassword" column="password"/>-->
+        <result property="hashedPassword" column="password"/>
         <result property="expiresAt" column="expires_at"/>
         <result property="firstName" column="first_name"/>
         <result property="lastName" column="last_name"/>
@@ -18,7 +18,7 @@
 
     <select id="findAll" resultMap="User">
         SELECT
-            id, email, first_name, last_name,
+            id, email, password, first_name, last_name,
             admin_flag, state,
             updated_at, lock_version
         FROM users
@@ -27,12 +27,22 @@
 
     <select id="get" resultMap="User" parameterType="Long">
         SELECT
-            id, email, first_name, last_name,
+            id, email, password, first_name, last_name,
             admin_flag, state,
             updated_at, lock_version
         FROM users
         WHERE id = #{id}
-          AND deleted_at IS NULL
+        AND deleted_at IS NULL
+    </select>
+
+    <select id="getByEmail" resultMap="User" parameterType="String">
+        SELECT
+            id, email, password, first_name, last_name,
+            admin_flag, state,
+            updated_at, lock_version
+        FROM users
+        WHERE email = #{email}
+        AND deleted_at IS NULL
     </select>
 
     <insert id="post" useGeneratedKeys="true" keyProperty="generatedId">

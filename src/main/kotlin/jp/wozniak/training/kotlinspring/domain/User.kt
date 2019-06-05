@@ -1,10 +1,14 @@
 package jp.wozniak.training.kotlinspring.domain
 
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.GrantedAuthority
 import java.time.LocalDateTime
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
+
+
 
 enum class UserState{
     CREATED, INITIALIZED, SIGNEDUP
@@ -13,14 +17,32 @@ enum class UserState{
 class User (
     val id: Long = 0,
     val email: String = "",
-    //val hashedPassword: String,
+    val hashedPassword: String = "",
     val expiresAt: LocalDateTime = LocalDateTime.now(),
     val firstName: String = "",
     val lastName: String = "",
     val adminFlag: Boolean = false,
     val state: UserState = UserState.CREATED,
     val lockVersion: Long = 0
-)
+) : UserDetails {
+    val auths : Collection<GrantedAuthority> = listOf<GrantedAuthority>()
+
+    override fun getUsername() : String = this.email
+    override fun getPassword() : String = this.hashedPassword
+    override fun getAuthorities() : Collection<GrantedAuthority> = this.auths
+    override fun isAccountNonLocked(): Boolean {
+        return false
+    }
+    override fun isAccountNonExpired(): Boolean {
+        return false
+    }
+    override fun isCredentialsNonExpired(): Boolean {
+        return false
+    }
+    override fun isEnabled(): Boolean {
+        return false
+    }
+}
 
 class NewUser (
     val email: String,
