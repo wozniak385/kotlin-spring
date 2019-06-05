@@ -1,5 +1,7 @@
 package jp.wozniak.training.kotlinspring.configuration
 
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -20,16 +23,25 @@ import javax.servlet.http.HttpServletResponse
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.access.AccessDeniedHandler
+import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 
-
+@Configuration
 @EnableWebSecurity
 class SecurityConfig(
     val userDetailsService: UserDetailsService,
-    val passwordEncoder: BCryptPasswordEncoder, //TODO korede iino???
-    val httpMessageConverter: MappingJackson2HttpMessageConverter
-    ) : WebSecurityConfigurerAdapter(), AuthenticationSuccessHandler, AuthenticationFailureHandler {
+    val httpMessageConverter: MappingJackson2HttpMessageConverter,
+    val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
+) : WebSecurityConfigurerAdapter(),
+    AuthenticationSuccessHandler, AuthenticationFailureHandler,
+    AuthenticationEntryPoint, AccessDeniedHandler {
 
     private val CONTENT_TYPE_JSON = MediaType.APPLICATION_JSON_UTF8
+
+    @Bean
+    fun passwordEncoder() : PasswordEncoder = BCryptPasswordEncoder()
 
     override fun configure(auth: AuthenticationManagerBuilder) {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder)
@@ -41,49 +53,104 @@ class SecurityConfig(
         // 認可
         http.authorizeRequests().anyRequest().authenticated()
 
-//        http.authorizeRequests()
-//            .antMatchers(TOP_PAGE_URL, ERROR_URL).permitAll() // 全許可
-//            .antMatchers(TOP_PAGE_URL, "/plan/detail/**", LOGIN_URL, "/user/password/reminder/**", "/user/add/**").permitAll() // アカウント非保持者
-//            .antMatchers("/plan/**", "/user/password/**").hasRole("USER") // アカウント保持者対象
-//            .antMatchers("/user/**").hasRole("ADMIN") // 管理権限対象
-//            .anyRequest().authenticated().and() // 指定以外はアクセス不可 「/」は/plan/detailにリダイレクトされる
+        http
+            // AUTHORIZE
+//            .authorizeRequests()
+//                .mvcMatchers("/prelogin", "/hello/**")
+//                    .permitAll()
+//                .mvcMatchers("/user/**")
+//                    .hasRole("USER")
+//                .mvcMatchers("/admin/**")
+//                    .hasRole("ADMIN")
+//                .anyRequest()
+//                    .authenticated()
+//            .and()
+            // EXCEPTION
+            .exceptionHandling()
+                .authenticationEntryPoint(this)
+                .accessDeniedHandler(this)
+            .and()
+            // LOGIN
+            .formLogin()
+                .loginProcessingUrl("/login").permitAll()
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .successHandler(this)
+                .failureHandler(this)
+            .and()
+            // LOGOUT
+            .logout()
+                .logoutUrl("/logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler(logoutSuccessHandler())
+            //.addLogoutHandler(new CookieClearingLogoutHandler())
+            .and()
+            // CSRF
+            .csrf()
+            //.disable()
+            //.ignoringAntMatchers("/login")
+            .csrfTokenRepository(CookieCsrfTokenRepository())
 
-        // ログイン
-        http.formLogin()
-            .successHandler(this)
-            .failureHandler(this)
+    }
 
-        override fun onAuthenticationSuccess(
+    override fun onAuthenticationSuccess(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authentication: Authentication
+    ) {
+        val result: MyResult = MyResult("認証成功") // JSONにするオブジェクト
+        val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response)
+        this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage) // Responseに書き込む
+        response.status = HttpStatus.OK.value() // 200 OK.
+    }
+    override fun  onAuthenticationFailure(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        exception: AuthenticationException
+    ) {
+        val result: MyResult = MyResult("認証失敗"); // JSONにするオブジェクト
+        val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response);
+        this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage); // Responseに書き込む
+        response.status = HttpStatus.UNAUTHORIZED.value(); // 401 Unauthorized.
+    }
+
+//    fun authenticationEntryPoint() : AuthenticationEntryPoint {
+//        return SimpleAuthenticationEntryPoint()
+//    }
+//    fun accessDeniedHandler() : AccessDeniedHandler {
+//        return SimpleAccessDeniedHandler()
+//    }
+
+    // implementing AuthenticationEntryPoint
+    override fun commence(
             request: HttpServletRequest,
             response: HttpServletResponse,
-            authentication: Authentication
-        ) {
-            val result: MyResult = MyResult("認証成功") // JSONにするオブジェクト
-            val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response)
-            this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage) // Responseに書き込む
-            response.status = HttpStatus.OK.value() // 200 OK.
+            authenticationException: AuthenticationException
+    ) /*throws IOException, ServletException*/ {
+        if (response.isCommitted()) {
+            //log.info("Response has already been committed.")
+            return
         }
-        override fun  onAuthenticationFailure(
+        response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase())
+    }
+
+    // implementing AuthenticationFailureHandler
+    override fun handle(
             request: HttpServletRequest,
             response: HttpServletResponse,
-            exception: AuthenticationException
-        ) {
-            val result: MyResult = MyResult("認証失敗"); // JSONにするオブジェクト
-            val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response);
-            this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage); // Responseに書き込む
-            response.status = HttpStatus.UNAUTHORIZED.value(); // 401 Unauthorized.
-        }
+            accessDeniedException: AccessDeniedException
+    ) /*throws IOException, ServletException*/ {
+        response.sendError(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase())
+    }
 
-        // ログアウト
-//        http.logout().logoutRequestMatcher(AntPathRequestMatcher("/logout**")) // ログアウト処理のパス マッチャーで当てたいのでこうなっている？
-//            .logoutSuccessUrl(TOP_PAGE_URL) // ログアウト後の遷移先
-//            .deleteCookies("JSESSIONID").and()
 
-        // CSRFトークン生成
-//        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository())
+    fun logoutSuccessHandler() : LogoutSuccessHandler {
+        return HttpStatusReturningLogoutSuccessHandler()
     }
 }
 
-class MyResult {
-    val message: String?
-}
+
+
+class MyResult (val message: String)
+

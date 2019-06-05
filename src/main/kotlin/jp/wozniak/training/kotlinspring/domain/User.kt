@@ -2,6 +2,7 @@ package jp.wozniak.training.kotlinspring.domain
 
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.LocalDateTime
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
@@ -46,12 +47,16 @@ class User (
 
 class NewUser (
     val email: String,
-    val hashedPassword: String,
+    val password: String,
     val expiresAt: LocalDateTime,
     val firstName: String,
     val lastName: String,
-    val adminFlag: Boolean
+    val adminFlag: Boolean,
+    private val passwordEncoder: PasswordEncoder
 ){
+    val hashedPassword: String
+        get() = this.passwordEncoder.encode(this.password)
+
     var generatedId: Long? = null // not in constructor, because this will be assigned after MySQL access.
 }
 
