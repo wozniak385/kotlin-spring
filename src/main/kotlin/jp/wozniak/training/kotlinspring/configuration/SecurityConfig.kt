@@ -1,5 +1,6 @@
 package jp.wozniak.training.kotlinspring.configuration
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpOutputMessage
@@ -27,73 +28,67 @@ import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
+import java.io.IOException
+import javax.servlet.ServletException
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     val userDetailsService: UserDetailsService,
-    val httpMessageConverter: MappingJackson2HttpMessageConverter,
-    val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
-) : WebSecurityConfigurerAdapter(),
-    AuthenticationSuccessHandler, AuthenticationFailureHandler,
-    AuthenticationEntryPoint, AccessDeniedHandler {
+    val httpMessageConverter: MappingJackson2HttpMessageConverter
+) : WebSecurityConfigurerAdapter()
+    ,AuthenticationSuccessHandler, AuthenticationFailureHandler
+    ,AuthenticationEntryPoint, AccessDeniedHandler
+{
 
     private val CONTENT_TYPE_JSON = MediaType.APPLICATION_JSON_UTF8
 
-    @Bean
-    fun passwordEncoder() : PasswordEncoder = BCryptPasswordEncoder()
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder)
+    @Throws(Exception::class)
+    override fun configure(
+        auth: AuthenticationManagerBuilder
+    ) {
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder())
     }
+
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
 
-        // 認可
-        http.authorizeRequests().anyRequest().authenticated()
+//        http.authorizeRequests().anyRequest().permitAll()
 
-        http
-            // AUTHORIZE
-//            .authorizeRequests()
-//                .mvcMatchers("/prelogin", "/hello/**")
-//                    .permitAll()
-//                .mvcMatchers("/user/**")
-//                    .hasRole("USER")
-//                .mvcMatchers("/admin/**")
-//                    .hasRole("ADMIN")
-//                .anyRequest()
-//                    .authenticated()
-//            .and()
-            // EXCEPTION
-            .exceptionHandling()
-                .authenticationEntryPoint(this)
-                .accessDeniedHandler(this)
-            .and()
-            // LOGIN
-            .formLogin()
-                .loginProcessingUrl("/login").permitAll()
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .successHandler(this)
-                .failureHandler(this)
-            .and()
-            // LOGOUT
-            .logout()
-                .logoutUrl("/logout")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-                .logoutSuccessHandler(logoutSuccessHandler())
-            //.addLogoutHandler(new CookieClearingLogoutHandler())
-            .and()
-            // CSRF
-            .csrf()
-            //.disable()
-            //.ignoringAntMatchers("/login")
+        http.authorizeRequests()
+            .mvcMatchers("/users/").permitAll()
+//            .mvcMatchers("/user/**").hasRole("USER")
+//            .mvcMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+
+        http.exceptionHandling()
+            .authenticationEntryPoint(this)
+            .accessDeniedHandler(this)
+
+        http.formLogin()
+            .loginProcessingUrl("/login").permitAll()
+            .usernameParameter("email")
+            .passwordParameter("password")
+            .successHandler(this)
+            .failureHandler(this)
+
+        http.logout()
+            .logoutUrl("/logout")
+            .invalidateHttpSession(true)
+            .deleteCookies("JSESSIONID")
+            .logoutSuccessHandler(logoutSuccessHandler())
+            /* .addLogoutHandler(CookieClearingLogoutHandler()) */
+
+        http.csrf()
+            /* .disable() */
+            /* .ignoringAntMatchers("/login") */
             .csrfTokenRepository(CookieCsrfTokenRepository())
-
     }
 
+    @Throws(IOException::class, ServletException::class)
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -104,6 +99,8 @@ class SecurityConfig(
         this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage) // Responseに書き込む
         response.status = HttpStatus.OK.value() // 200 OK.
     }
+
+    @Throws(IOException::class, ServletException::class)
     override fun  onAuthenticationFailure(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -112,22 +109,16 @@ class SecurityConfig(
         val result: MyResult = MyResult("認証失敗"); // JSONにするオブジェクト
         val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response);
         this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage); // Responseに書き込む
-        response.status = HttpStatus.UNAUTHORIZED.value(); // 401 Unauthorized.
+        response.status = HttpStatus.UNAUTHORIZED.value() // 401 Unauthorized.
     }
 
-//    fun authenticationEntryPoint() : AuthenticationEntryPoint {
-//        return SimpleAuthenticationEntryPoint()
-//    }
-//    fun accessDeniedHandler() : AccessDeniedHandler {
-//        return SimpleAccessDeniedHandler()
-//    }
-
     // implementing AuthenticationEntryPoint
+    @Throws(IOException::class, ServletException::class)
     override fun commence(
             request: HttpServletRequest,
             response: HttpServletResponse,
             authenticationException: AuthenticationException
-    ) /*throws IOException, ServletException*/ {
+    ) {
         if (response.isCommitted()) {
             //log.info("Response has already been committed.")
             return
@@ -136,11 +127,12 @@ class SecurityConfig(
     }
 
     // implementing AuthenticationFailureHandler
+    @Throws(IOException::class, ServletException::class)
     override fun handle(
             request: HttpServletRequest,
             response: HttpServletResponse,
             accessDeniedException: AccessDeniedException
-    ) /*throws IOException, ServletException*/ {
+    ) {
         response.sendError(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase())
     }
 
