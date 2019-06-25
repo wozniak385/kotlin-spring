@@ -37,10 +37,9 @@ class SecurityConfig(
     val userDetailsService: UserDetailsService,
     val httpMessageConverter: MappingJackson2HttpMessageConverter
 ) : WebSecurityConfigurerAdapter()
-    ,AuthenticationSuccessHandler, AuthenticationFailureHandler
-    ,AuthenticationEntryPoint, AccessDeniedHandler
+    , AuthenticationSuccessHandler, AuthenticationFailureHandler
+    , AuthenticationEntryPoint, AccessDeniedHandler
 {
-
     private val CONTENT_TYPE_JSON = MediaType.APPLICATION_JSON_UTF8
 
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
@@ -59,7 +58,7 @@ class SecurityConfig(
 //        http.authorizeRequests().anyRequest().permitAll()
 
         http.authorizeRequests()
-            .mvcMatchers("/users/").permitAll()
+            .mvcMatchers("/login","/users","/users/**").permitAll()
 //            .mvcMatchers("/user/**").hasRole("USER")
 //            .mvcMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated()
@@ -70,8 +69,8 @@ class SecurityConfig(
 
         http.formLogin()
             .loginProcessingUrl("/login").permitAll()
-            .usernameParameter("email")
-            .passwordParameter("password")
+                .usernameParameter("email")
+                .passwordParameter("password")
             .successHandler(this)
             .failureHandler(this)
 
@@ -83,32 +82,34 @@ class SecurityConfig(
             /* .addLogoutHandler(CookieClearingLogoutHandler()) */
 
         http.csrf()
-            /* .disable() */
-            /* .ignoringAntMatchers("/login") */
-            .csrfTokenRepository(CookieCsrfTokenRepository())
+            .disable()
+//            .ignoringAntMatchers("/login")
+//            .csrfTokenRepository(CookieCsrfTokenRepository())
     }
 
+    // implementing AuthenticationSuccessHandler
     @Throws(IOException::class, ServletException::class)
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        val result: MyResult = MyResult("認証成功") // JSONにするオブジェクト
+        val result = MyResult("認証成功") // JSONにするオブジェクト
         val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response)
         this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage) // Responseに書き込む
         response.status = HttpStatus.OK.value() // 200 OK.
     }
 
+    // implementing AuthenticationFailureHandler
     @Throws(IOException::class, ServletException::class)
     override fun  onAuthenticationFailure(
         request: HttpServletRequest,
         response: HttpServletResponse,
         exception: AuthenticationException
     ) {
-        val result: MyResult = MyResult("認証失敗"); // JSONにするオブジェクト
-        val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response);
-        this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage); // Responseに書き込む
+        val result = MyResult("認証失敗") // JSONにするオブジェクト
+        val outputMessage: HttpOutputMessage = ServletServerHttpResponse(response)
+        this.httpMessageConverter.write(result, CONTENT_TYPE_JSON, outputMessage) // Responseに書き込む
         response.status = HttpStatus.UNAUTHORIZED.value() // 401 Unauthorized.
     }
 
@@ -126,7 +127,7 @@ class SecurityConfig(
         response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase())
     }
 
-    // implementing AuthenticationFailureHandler
+    // implementing AccessDeniedHandler
     @Throws(IOException::class, ServletException::class)
     override fun handle(
             request: HttpServletRequest,
