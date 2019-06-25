@@ -52,7 +52,7 @@ class NewUser (
     val firstName: String,
     val lastName: String,
     val adminFlag: Boolean,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder //TODO: it should be autowired
 ){
     val hashedPassword: String
         get() = this.passwordEncoder.encode(this.password)
@@ -63,11 +63,11 @@ class NewUser (
 class PatchUser (
     val id: Long,
     val email: String? = null,
-    val hashedPassword: String? = null,
+    val hashedPassword: String? = null, //TODO: i think this shoudn'd be here (instead of it, `password`)
     val expiresAt: LocalDateTime? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val adminFlag: Boolean? = null,
     val state: UserState? = null,
-    var lockVersion: Long // 'var' because this is to be incremented
+    var lockVersion: Long // `var` because this is to be incremented
 )

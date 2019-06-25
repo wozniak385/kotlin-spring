@@ -36,7 +36,7 @@ class UserController(
     }
 
     @PatchMapping("/")
-    fun put(@RequestBody user: PatchUser) : PatchUser {
+    fun patch(@RequestBody user: PatchUser) : PatchUser {
         this.userService.patch(user)
         return user
     }
