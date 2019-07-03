@@ -1,8 +1,11 @@
 package jp.wozniak.training.kotlinspring.domain
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
@@ -28,32 +31,25 @@ class User (
 ) : UserDetails {
     val auths : Collection<GrantedAuthority> = listOf<GrantedAuthority>()
 
-    override fun getUsername() : String = this.email
-    override fun getPassword() : String = this.hashedPassword
-    override fun getAuthorities() : Collection<GrantedAuthority> = this.auths
-    override fun isAccountNonLocked(): Boolean {
-        return false
-    }
-    override fun isAccountNonExpired(): Boolean {
-        return false
-    }
-    override fun isCredentialsNonExpired(): Boolean {
-        return false
-    }
-    override fun isEnabled(): Boolean {
-        return false
-    }
+    override fun getUsername(): String = this.email
+    override fun getPassword(): String = this.hashedPassword
+    override fun getAuthorities(): Collection<GrantedAuthority> = this.auths
+    override fun isAccountNonLocked(): Boolean = false
+    override fun isAccountNonExpired(): Boolean = false
+    override fun isCredentialsNonExpired(): Boolean = false
+    override fun isEnabled(): Boolean = false
 }
 
 class NewUser (
-    val email: String,
     val password: String,
-    val expiresAt: LocalDateTime,
+    val email: String,
     val firstName: String,
-    val lastName: String,
+    val expiresAt: LocalDateTime,
     val adminFlag: Boolean,
-    private val passwordEncoder: PasswordEncoder //TODO: it should be autowired
+    val lastName: String
 ){
+    lateinit var passwordEncoder: PasswordEncoder = BCryptPasswordEncoder() //NOTTODO: it should be autowired -> akirameta.
+
     val hashedPassword: String
         get() = this.passwordEncoder.encode(this.password)
 
