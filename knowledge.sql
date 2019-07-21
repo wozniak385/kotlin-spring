@@ -13,7 +13,7 @@ CREATE TABLE `users` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`,`deleted_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create syntax for TABLE 'channels'
 CREATE TABLE `channels` (
@@ -29,8 +29,8 @@ CREATE TABLE `channels` (
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `title` (`title`,`deleted_at`),
   KEY `USER_ID` (`user`),
-  CONSTRAINT `channels_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`USER_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
+  CONSTRAINT `channels_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create syntax for TABLE 'knowledges'
 CREATE TABLE `knowledges` (
@@ -45,6 +45,6 @@ CREATE TABLE `knowledges` (
   UNIQUE KEY `KNOWLEDGE_ID` (`id`),
   KEY `USER_ID` (`user`),
   KEY `CHANNEL_ID` (`channel`),
-  CONSTRAINT `knowledges_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`USER_ID`),
-  CONSTRAINT `knowledges_ibfk_2` FOREIGN KEY (`channel`) REFERENCES `channel` (`CHANNEL_ID`)
+  CONSTRAINT `knowledges_ibfk_1` FOREIGN KEY (`user`) REFERENCES `users` (`id`),
+  CONSTRAINT `knowledges_ibfk_2` FOREIGN KEY (`channel`) REFERENCES `channels` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
