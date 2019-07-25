@@ -40,8 +40,6 @@ class UserService(
         this.channelRepository.deleteByUser(id)
     }
 
-    override fun loadUserByUsername(username: String) : UserDetails /*throws UsernameNotFoundException*/ {
-        return this.userRepository.getByEmail(username)
-    }
+    override fun loadUserByUsername(username: String) : UserDetails /*throws UsernameNotFoundException*/ = this.userRepository.getByEmail(username)
 
 }

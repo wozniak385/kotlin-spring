@@ -48,8 +48,7 @@ class NewUser (
     val adminFlag: Boolean,
     val lastName: String
 ){
-    lateinit var passwordEncoder: PasswordEncoder = BCryptPasswordEncoder() //NOTTODO: it should be autowired -> akirameta.
-
+    private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder() //NOTTODO: it should be autowired -> akirameta.
     val hashedPassword: String
         get() = this.passwordEncoder.encode(this.password)
 
