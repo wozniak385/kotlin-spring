@@ -7,6 +7,7 @@ import jp.wozniak.training.kotlinspring.repository.ChannelRepository
 import jp.wozniak.training.kotlinspring.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,6 +41,9 @@ class UserService(
         this.channelRepository.deleteByUser(id)
     }
 
-    override fun loadUserByUsername(username: String) : UserDetails /*throws UsernameNotFoundException*/ = this.userRepository.getByEmail(username)
+    @Throws(UsernameNotFoundException::class)
+    override fun loadUserByUsername(username: String) : UserDetails {
+        return this.userRepository.getByEmail(username)
+    }
 
 }

@@ -50,7 +50,7 @@ class NewUser (
 ){
     private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder() //NOTTODO: it should be autowired -> akirameta.
     val hashedPassword: String
-        get() = this.passwordEncoder.encode(this.password)
+        get() = BCryptPasswordEncoder().encode(this.password)
 
     var generatedId: Long? = null // not in constructor, because this will be assigned after MySQL access.
 }
